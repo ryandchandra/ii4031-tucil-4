@@ -125,19 +125,17 @@ class GUI:
             document_byteintarray = StringToByteIntArray(document)
                 
             # Encrypt
-            if (self.role=="Alice"):
-                e = self.Bob_e
-                n = self.Bob_n
-            elif (self.role=="Bob"):
-                e = self.Alice_e
-                n = self.Alice_n
-                    
+            e = self.key_e 
+            n = self.key_n
+            print(e)
+            print(n)    
+
             if (e==-1 or n==-1):
                 mb.showinfo(title="Alert",message="Please choose key first")
             else:
                 start_time = time.time()
                 
-                signature_hexstr = RSAEncrypt(document_byteintarray,e,n,1)
+                signature_hexstr = GetSignature(document,e,n,1)
 
                 end_time = time.time()
                 elapsed_time = end_time - start_time
