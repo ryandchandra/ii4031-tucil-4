@@ -20,19 +20,23 @@ class FileHandlingWindow:
         self.n_key = ""
 
         # Define elements
+        #--- file name ---#
         self.file_label = tk.Label(master=self.window,text="Document : " + self.file,width=50)
         self.file_label.grid(row=0,column=0,columnspan=2,sticky="we",padx=120,pady=2)
 
+        #--- public key e ---#
         self.e_key_label = tk.Label(master=self.window,text="e: ")
         self.e_key_label.grid(row=3,column=0,columnspan=2,padx=120,pady=2)
         self.e_key_entry = tk.Text(master=self.window,width=10,height=1)
         self.e_key_entry.grid(row=3,column=1,padx=120,pady=2)
 
+        #--- private key d ---#
         self.d_key_label = tk.Label(master=self.window,text="d: ")
         self.d_key_label.grid(row=4,column=0,columnspan=2,padx=120,pady=2)
         self.d_key_entry = tk.Text(master=self.window,width=10,height=1)
         self.d_key_entry.grid(row=4,column=1,padx=120,pady=2)
 
+        #--- n key ---#
         self.n_key_label = tk.Label(master=self.window,text="n: ")
         self.n_key_label.grid(row=5,column=0,columnspan=2,padx=120,pady=2)
         self.n_key_entry = tk.Text(master=self.window,width=10,height=1)
@@ -47,6 +51,9 @@ class FileHandlingWindow:
         tk.Button(master=self.window,text="Unselect File",width=20,command=self.UnselectFile).grid(row=11,column=0,columnspan=2,pady=2)
         
     def ChooseFile(self):
+        # Event handler when Choose File button is pressed
+        # Choose document file
+    
         # Take filename
         filename = fd.askopenfilename(
             initialdir = "/",
@@ -59,6 +66,10 @@ class FileHandlingWindow:
             self.file = filename
 
     def ChoosePublicKey(self):
+        # Event handler when Choose Public Key (e,n) is pressed
+        # Choose public key file (.pub)
+        
+        # Open file dialog
         public_filename = fd.askopenfilename(
             initialdir = "/",
             title = "Select public key file",
@@ -66,6 +77,7 @@ class FileHandlingWindow:
         )
         
         if (public_filename!=""):
+            # Read file content
             public_file = open(public_filename,"r")
             content_pub = public_file.read()
             
@@ -144,7 +156,7 @@ class FileHandlingWindow:
                 )
                 if (filename!=""):
                     # save hasil enkripsi per byte
-                    output_file = open(filename, "wb")
+                    output_file = open(filename, "w")
                         
                     signature_byteintarray = StringToByteIntArray(signature_hexstr)
                     

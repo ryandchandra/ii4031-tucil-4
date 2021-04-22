@@ -44,16 +44,16 @@ class SubjectFrame:
         self.title_label = tk.Label(master=self.frame,text=subject,width=30)
         self.title_label.pack()
         
-        self.e_key = tk.Label(master=self.frame,text="e: -1")
+        self.e_key = tk.Label(master=self.frame,text="(public) e: -1")
         self.e_key.pack()
         
-        self.d_key = tk.Label(master=self.frame,text="d: -1")
+        self.d_key = tk.Label(master=self.frame,text="(private) d: -1")
         self.d_key.pack()
         
         self.n_key = tk.Label(master=self.frame,text="n: -1")
         self.n_key.pack()
     
     def UpdateKey(self,e,d,n):
-        self.e_key["text"] = "e: " + str(e)
-        self.d_key["text"] = "d: " + str(d)
+        self.e_key["text"] = "(public) e: " + str(e)
+        self.d_key["text"] = "(private) d: " + str(d)
         self.n_key["text"] = "n: " + str(n)

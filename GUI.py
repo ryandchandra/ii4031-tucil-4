@@ -126,25 +126,27 @@ class GUI:
             mb.showinfo(title="Alert",message="Please insert document")
         else:
             # Digital Sign
+            # Take private key (d,n)
             d = self.key_d 
             n = self.key_n
             state_sep_sign = self.sep_sign.get()
 
-            if (d==-1 or n==-1):
-                mb.showinfo(title="Alert",message="Please choose private key first")
+            if (d==-1 or n==-1): # No key is chosen
+                mb.showinfo(title="Alert",message="Please choose private key (d,n) first")
             else:
                 start_time = time.time()
                 
+                # Generate signature
                 signature_hexstr = GetSignature(document.encode(),d,n)
 
                 end_time = time.time()
                 elapsed_time = end_time - start_time
                 
                 # Insert into signature field
-                if (state_sep_sign==1):
+                if (state_sep_sign==1): # Signature is separated, insert to signature field
                     self.signature.entry.delete("1.0",tk.END)
                     self.signature.entry.insert("1.0",signature_hexstr)
-                else:
+                else: # Signature is not separated, insert in end of document
                     signed_document = document + "<ds>" + signature_hexstr + "</ds>"
                     
                     self.document.entry.delete("1.0",tk.END)
@@ -184,19 +186,20 @@ class GUI:
             n = self.key_n
             
             if (e==-1 or n==-1):
-                mb.showinfo(title="Alert",message="Please choose public key first")
+                mb.showinfo(title="Alert",message="Please choose public key (e,n) first")
             else:            
                 # Decrypt
                 start_time = time.time()
                 
+                # Verify signature
                 Verified = VerifySignature(document.encode(),signature,e,n)
                 
                 end_time = time.time()
                 elapsed_time = end_time - start_time
                 
-                if (Verified):
+                if (Verified): # Verified
                     mb.showinfo(title="Verification",message="Signature is verified")
-                else :
+                else : # Wrong
                     mb.showinfo(title="Verification",message="Signature is not verified")
                 
                 mb.showinfo(title="Alert",message="Process finished in " + str(elapsed_time) + "s")
@@ -228,11 +231,11 @@ class GUI:
                 public_file.close()
 
                 # Masukkan isi file
-                if (self.key_n==-1 or self.key_d==-1): # Jika n Alice belum diset (key Alice belum diset), atau baru e dan n Alice yang diset, masukkan e dan n langsung
+                if (self.key_n==-1 or self.key_d==-1): # Jika n belum diset (key belum diset), atau baru e dan n yang diset, masukkan e dan n langsung
                     self.key_e = e_pub
                     self.key_n = n_pub
                     self.key_list_frame.UpdateKey(self.key_e,self.key_d,self.key_n)
-                elif (self.key_d!=-1 and self.key_n==n_pub): # Jika d dan n Alice sudah diset dan sesuai dengan n baru
+                elif (self.key_d!=-1 and self.key_n==n_pub): # Jika d dan n sudah diset dan sesuai dengan n baru
                     if (math.gcd(e_pub,self.key_d)==1):
                         self.key_e = e_pub
                         self.key_n = n_pub
@@ -258,11 +261,11 @@ class GUI:
                 
                 private_file.close()
                 
-                if (self.key_n==-1 or self.key_e==-1): # Jika n Alice belum diset (key Alice belum diset), atau baru e dan n Alice yang diset, masukkan e dan n langsung
+                if (self.key_n==-1 or self.key_e==-1): # Jika n belum diset (key belum diset), atau baru e dan n yang diset, masukkan e dan n langsung
                     self.key_d = d_pri
                     self.key_n = n_pri
                     self.key_list_frame.UpdateKey(self.key_e,self.key_d,self.key_n)
-                elif (self.key_e!=-1 and self.key_n==n_pri): # Jika d dan n Alice sudah diset dan sesuai dengan n baru
+                elif (self.key_e!=-1 and self.key_n==n_pri): # Jika d dan n sudah diset dan sesuai dengan n baru
                     if (math.gcd(d_pri,self.key_e)==1):
                         self.key_d = d_pri
                         self.key_n = n_pri
