@@ -11,7 +11,7 @@ class FileHandlingWindow:
     def __init__(self,parent):
         self.parent = parent
         self.window = tk.Toplevel(self.parent)
-        self.window.title("Encrypt/Decrypt File")
+        self.window.title("File Sign/Verify")
         
         self.file = ""
         self.key = ""

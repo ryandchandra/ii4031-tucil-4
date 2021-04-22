@@ -99,6 +99,25 @@ def BlockByteIntArray(byteint_array,size):
             
         return blocked_byteintarray
         
+def GetDocAndSign(mixed_document):
+    # Mengambil document dan signature dari document (text) yang signature tergabung dengan document
+    # Input : document yang tergabung dengan signature
+    # Output : document (string) dan signature (int) (jika ada), -1,-1 jika tidak ada signature
+    
+    if (mixed_document[-5:]=="</ds>"): # Cek apakah bagian paling akhir document adalah closing tag
+        ds_index = mixed_document.rfind("<ds>") # Cari opening tag juga
+        if (ds_index!=-1): # Bila opening tag ditemukan, ambil signaturenya
+            try:
+                hex_sign = mixed_document[ds_index+4:-5]
+                sign = int(hex_sign,16)
+                return mixed_document[:ds_index],sign
+            except ValueError:
+                return -1,-1
+        else:
+            return -1,-1
+    else:
+        return -1,-1
+        
 def BlockCiphertext(ciphertext,n):
     # Membagi ciphertext dengan panjang blok sesuai ceil(16 log n)
     # Input : ciphertext panjang dalam digit hexadecimal
