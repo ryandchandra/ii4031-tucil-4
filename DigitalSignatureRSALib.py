@@ -63,14 +63,15 @@ def GetDocAndSign(mixed_document):
 
 def GetSignature(bytes_document,d,n):
     # Digital sign
-    # Input :   Document to be signed in bytes format
-    # Output :  Encrypted Hash Value (using RSA) --> Signature
+    # Input :   Document to be signed in bytes format, private key (d,n)
+    # Output :  Encrypted Hash Value (using RSA) --> Signature in string of hex
 
     # Hitung nilai Hash
     hash_value = hashlib.sha1(bytes_document)
     hash_value = hash_value.hexdigest()
     hash_value = int(hash_value,16)
     
+    # RSA encrypt using private key d
     signature = (hash_value**d)%n
     
     signature_hex = hex(signature)
@@ -79,10 +80,13 @@ def GetSignature(bytes_document,d,n):
     return signature_hexstr.upper()
     
 def VerifySignature(bytes_document,signature_hexstr,e,n):
+    # Verify signature
+    # Input : Document to be verified in bytes format, signature in string of hex, public key (e,n)
+    # Output : True if signature is verified, False otherwise
     
     try:
         hash_value_fromsign = int(signature_hexstr,16)
-        hash_value_fromsign = (hash_value_fromsign**e)%n
+        hash_value_fromsign = (hash_value_fromsign**e)%n # RSA decrypt using public key e
     except ValueError:
         return False
     

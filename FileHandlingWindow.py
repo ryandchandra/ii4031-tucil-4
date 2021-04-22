@@ -20,7 +20,7 @@ class FileHandlingWindow:
         self.n_key = ""
 
         # Define elements
-        self.file_label = tk.Label(master=self.window,text="File : " + self.file,width=50)
+        self.file_label = tk.Label(master=self.window,text="Document : " + self.file,width=50)
         self.file_label.grid(row=0,column=0,columnspan=2,sticky="we",padx=120,pady=2)
 
         self.e_key_label = tk.Label(master=self.window,text="e: ")
@@ -50,12 +50,12 @@ class FileHandlingWindow:
         # Take filename
         filename = fd.askopenfilename(
             initialdir = "/",
-            title = "Select  file",
+            title = "Select file",
             filetypes = [("All files","*.*")],
         )
         
         if (filename!=""):
-            self.file_label["text"] = "File : " + filename
+            self.file_label["text"] = "Document : " + filename
             self.file = filename
 
     def ChoosePublicKey(self):
@@ -160,6 +160,7 @@ class FileHandlingWindow:
         if (self.file==""):
             mb.showinfo(title="Alert",message="Please choose a file")
         else:
+            # buka file signature
             signature_filename = fd.askopenfilename(
                 initialdir = "/",
                 title = "Select signature file",
@@ -182,15 +183,15 @@ class FileHandlingWindow:
                     start_time = time.time()
                 
                     # baca file per byte lalu simpan menjadi array of integer (byte)
-                    plaintext_byteintarray = OpenFileAsByteIntArray(self.file)
-                    plaintext_bytes = bytes(plaintext_byteintarray)
+                    document_byteintarray = OpenFileAsByteIntArray(self.file)
+                    document_bytes = bytes(plaintext_byteintarray)
                 
-                    # baca file per byte lalu simpan menjadi array of integer (byte)
+                    # baca file signature per byte lalu simpan menjadi string of hex
                     signature_byteintarray = OpenFileAsByteIntArray(signature_filename)
                     signature_bytes = bytes(signature_byteintarray)
                     signature_hexstr = signature_bytes.decode()
                     
-                    # verify
+                    # verify signature
                     Verified = VerifySignature(plaintext_bytes,signature_hexstr,e,n)
                     
                     end_time = time.time()
@@ -205,4 +206,4 @@ class FileHandlingWindow:
     
     def UnselectFile(self):
         self.file = ""
-        self.file_label["text"] = "File : " + self.file
+        self.file_label["text"] = "Document : " + self.file

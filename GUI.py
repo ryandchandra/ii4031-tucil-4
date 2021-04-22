@@ -130,7 +130,7 @@ class GUI:
             n = self.key_n
             state_sep_sign = self.sep_sign.get()
 
-            if (e==-1 or n==-1):
+            if (d==-1 or n==-1):
                 mb.showinfo(title="Alert",message="Please choose private key first")
             else:
                 start_time = time.time()
@@ -149,7 +149,6 @@ class GUI:
                     
                     self.document.entry.delete("1.0",tk.END)
                     self.document.entry.insert("1.0",signed_document)
-                    self.document.entry.insert("1.0",document)
                     
                 mb.showinfo(title="Alert",message="Process finished in " + str(elapsed_time) + "s")
             
