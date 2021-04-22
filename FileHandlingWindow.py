@@ -199,7 +199,7 @@ class FileHandlingWindow:
                 
                     # baca file per byte lalu simpan menjadi array of integer (byte)
                     document_byteintarray = OpenFileAsByteIntArray(self.file)
-                    document_bytes = bytes(plaintext_byteintarray)
+                    document_bytes = bytes(document_byteintarray)
                 
                     # baca file signature per byte lalu simpan menjadi string of hex
                     signature_byteintarray = OpenFileAsByteIntArray(signature_filename)
@@ -207,7 +207,7 @@ class FileHandlingWindow:
                     signature_hexstr = signature_bytes.decode()
                     
                     # verify signature
-                    Verified = VerifySignature(plaintext_bytes,signature_hexstr,e,n)
+                    Verified = VerifySignature(document_bytes,signature_hexstr,e,n)
                     
                     end_time = time.time()
                     elapsed_time = end_time - start_time
