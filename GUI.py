@@ -158,18 +158,29 @@ class GUI:
         # Decrypt signature and key
         
         # Take the signature and key from the field
-        signature = self.signature.entry.get("1.0",tk.END)[:-1]
+        state_sep_sign = self.sep_sign.get()
+        if (state_sep_sign==1):
+            document = self.document.entry.get("1.0",tk.END)[:-1]
+            signature = self.signature.entry.get("1.0",tk.END)[:-1]
+            if ((len(document)==0) or (len(signature)==0)):
+                data_available = 0  
+            else:
+                data_available = 1
+        else:
+            mix_doc = self.document.entry.get("1.0",tk.END)[:-1]
+            document, signature = GetDocAndSign(mix_doc)
+            if ((document==-1) or (signature==-1)):
+                data_available = 0
+            else:
+                data_available = 1
 
         # Check for validity
-        if (len(signature)==0): # Empty signature
-            mb.showinfo(title="Alert",message="Please insert signature")
+        if (data_available == 0):
+            mb.showinfo(title="Alert",message="Please insert document and/or signature")
         else:
-            if (self.role=="Alice"):
-                d = self.Alice_d
-                n = self.Alice_n
-            elif (self.role=="Bob"):
-                d = self.Bob_d
-                n = self.Bob_n
+            # Decrypt
+            d = self.key_d 
+            n = self.key_n
             
             if (d==-1 or n==-1):
                 mb.showinfo(title="Alert",message="Please choose key first")
@@ -177,15 +188,19 @@ class GUI:
                 # Decrypt
                 start_time = time.time()
                 
-                document_byteintarray = RSADecrypt(signature,d,n)
-                document = bytes(document_byteintarray)
+                hash_value_byteintarray_fromsign = RSADecrypt(signature,d,n)
+                hash_value_byteintarray_fromdoc = hashlib.sha1(document.encode())
+                hash_value_byteintarray_fromdoc = hash_value_byteintarray_fromdoc.hexdigest()
+                hash_value_byteintarray_fromdoc = StringToByteIntArray(hash_value_byteintarray_fromdoc)
+                Verified = hash_value_byteintarray_fromdoc == hash_value_byteintarray_fromsign
                 
                 end_time = time.time()
                 elapsed_time = end_time - start_time
                 
-                # Insert into document field
-                self.document.entry.delete("1.0",tk.END)
-                self.document.entry.insert("1.0",document)
+                if (Verified):
+                    mb.showinfo(title="Verification",message="Signature is verified")
+                else :
+                    mb.showinfo(title="Verification",message="Signature is not verified")
                 
                 mb.showinfo(title="Alert",message="Process finished in " + str(elapsed_time) + "s")
         

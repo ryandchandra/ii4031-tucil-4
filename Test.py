@@ -2,9 +2,14 @@
 from DigitalSignatureRSALib import *
 
 # initializing string
-str = "GeeksforGeeks<ds>AB</ds>"
+str = "A<ds>10acdf468</ds>"
+
 
 A, B = GetDocAndSign(str)
 print(A)
-print(1!=2)
+print(B)
 
+str2 = hex(B)
+str3 = hex(str2)
+print(str2)
+print(str3)
