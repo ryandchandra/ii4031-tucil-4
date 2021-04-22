@@ -85,7 +85,7 @@ class GUI:
         self.signature.frame.grid(row=3,column=0,columnspan=2)
         
         #--- file frame ---#
-        file_method_list = ["Open Doc+Sign from File","Open Document from File","Open Signature from File","Save Doc+Sign from File","Save Document to File","Save Signature to File","File Sign and Verify"]
+        file_method_list = ["Open Doc+Sign from File (.txt)","Open Document from File (.txt)","Open Signature from File (.sig)","Save Doc+Sign to File (.txt)","Save Document to File (.txt)","Save Signature to File (.sig)","File Sign and Verify"]
         self.file_frame = ButtonListFrame(
             title = "File",
             labels = file_method_list,
@@ -285,12 +285,21 @@ class GUI:
     def OpenFileText(self,event,text):
         # Open file using open file dialog
         
-        # Take filename
-        filename = fd.askopenfilename(
-            initialdir = "/",
-            title = "Select " + text + " file",
-            filetypes = [("Text files (.txt)","*.txt"),("All files","*.*")]
-        )
+        filename=""
+        if (text=="document" or text=="docsign"):        
+            # Take filename
+            filename = fd.askopenfilename(
+                initialdir = "/",
+                title = "Select " + text + " file",
+                filetypes = [("Text files (.txt)","*.txt"),("All files","*.*")]
+            )
+        elif (text=="signature"):
+            # Take filename
+            filename = fd.askopenfilename(
+                initialdir = "/",
+                title = "Select " + text + " file",
+                filetypes = [("Signature files (.sig)","*.sig"),("All files","*.*")]
+            )
         
         if (filename!=""): # If filename is chosen
             content = OpenFileAsByteIntArray(filename)
@@ -316,13 +325,23 @@ class GUI:
     def SaveFileText(self,event,text):
         # Save file using save file dialog
         
-        # Take filename
-        filename = fd.asksaveasfilename(
-            initialdir = "/",
-            title = "Select " + text + " file",
-            filetypes = [("Text files (.txt)","*.txt"),("All files","*.*")],
-            defaultextension = [("Text files (.txt)","*.txt"),("All files","*.*")]
-        )
+        filename=""
+        if (text=="document" or text=="docsign"):
+            # Take filename
+            filename = fd.asksaveasfilename(
+                initialdir = "/",
+                title = "Select " + text + " file",
+                filetypes = [("Text files (.txt)","*.txt"),("All files","*.*")],
+                defaultextension = [("Text files (.txt)","*.txt"),("All files","*.*")]
+            )
+        elif (text=="signature"):
+            # Take filename
+            filename = fd.asksaveasfilename(
+                initialdir = "/",
+                title = "Select " + text + " file",
+                filetypes = [("Signature files (.sig)","*.sig"),("All files","*.*")],
+                defaultextension = [("Signature files (.sig)","*.sig"),("All files","*.*")]
+            )
         
         if (filename!=""): # If file name is chosen
             file = open(filename,"wb")
@@ -337,8 +356,17 @@ class GUI:
                 for byteint in signature_byteintarray:
                     file.write(byteint.to_bytes(1,byteorder='little'))
             elif (text=="docsign"):
-                pass
+                if (self.sep_sign.get()==1):
+                    document = self.document.entry.get("1.0",tk.END)[:-1]
+                    signature = self.signature.entry.get("1.0",tk.END)[:-1]
+                    mixed_doc = document + "<ds>" + signature + "</ds>"
+                elif (self.sep_sign.get()==0):
+                    mixed_doc = self.document.entry.get("1.0",tk.END)[:-1]
                 
+                mixed_doc_byteintarray = StringToByteIntArray(mixed_doc)
+                for byteint in mixed_doc_byteintarray:
+                    file.write(byteint.to_bytes(1,byteorder='little'))
+                        
             file.close()
         
         return "break"
