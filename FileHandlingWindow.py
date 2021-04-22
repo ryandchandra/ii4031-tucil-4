@@ -95,6 +95,9 @@ class FileHandlingWindow:
         return "break"
         
     def ChoosePrivateKey(self):
+        # Event handler when Choose Private Key (d,n) is pressed
+        # Choose private key file (.pri)
+    
         private_filename = fd.askopenfilename(
             initialdir = "/",
             title = "Select private key file",
@@ -156,7 +159,7 @@ class FileHandlingWindow:
                 )
                 if (filename!=""):
                     # save hasil enkripsi per byte
-                    output_file = open(filename, "w")
+                    output_file = open(filename, "wb")
                         
                     signature_byteintarray = StringToByteIntArray(signature_hexstr)
                     
@@ -209,10 +212,10 @@ class FileHandlingWindow:
                     end_time = time.time()
                     elapsed_time = end_time - start_time
                     
-                    if (Verified):
+                    if (Verified): # Verified
                         mb.showinfo(title="Alert",message="Signature is verified")
                         mb.showinfo(title="Alert",message="Process finished in "+str(elapsed_time)+" s")
-                    else:
+                    else: # Wrong
                         mb.showinfo(title="Alert",message="Signature is not verified")
                         mb.showinfo(title="Alert",message="Process finished in "+str(elapsed_time)+" s")                        
     

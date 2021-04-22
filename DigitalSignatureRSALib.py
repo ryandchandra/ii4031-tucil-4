@@ -84,12 +84,14 @@ def VerifySignature(bytes_document,signature_hexstr,e,n):
     # Input : Document to be verified in bytes format, signature in string of hex, public key (e,n)
     # Output : True if signature is verified, False otherwise
     
+    # Calculate hash value from signature
     try:
         hash_value_fromsign = int(signature_hexstr,16)
         hash_value_fromsign = (hash_value_fromsign**e)%n # RSA decrypt using public key e
     except ValueError:
         return False
-    
+
+    # Calculate hash value from document
     hash_value_fromdoc = hashlib.sha1(bytes_document)
     hash_value_fromdoc = hash_value_fromdoc.hexdigest()
     hash_value_fromdoc = int(hash_value_fromdoc,16)%n
