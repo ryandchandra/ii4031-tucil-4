@@ -22,8 +22,6 @@ class FileHandlingWindow:
         # Define elements
         self.file_label = tk.Label(master=self.window,text="File : " + self.file,width=50)
         self.file_label.grid(row=0,column=0,columnspan=2,sticky="we",padx=120,pady=2)
-        self.key_label = tk.Label(master=self.window,text="Key : " + self.key,width=50)
-        self.key_label.grid(row=1,column=0,columnspan=2,sticky="we",padx=120,pady=2)
 
         self.e_key_label = tk.Label(master=self.window,text="e: ")
         self.e_key_label.grid(row=3,column=0,columnspan=2,padx=120,pady=2)
@@ -42,10 +40,10 @@ class FileHandlingWindow:
         
         # Button list
         tk.Button(master=self.window,text="Choose File",width=20,command=self.ChooseFile).grid(row=6,column=0,columnspan=2,pady=2)
-        tk.Button(master=self.window,text="Choose Public Key",width=20,command=self.ChoosePublicKey).grid(row=7,column=0,columnspan=2,pady=2)
-        tk.Button(master=self.window,text="Choose Private Key",width=20,command=self.ChoosePrivateKey).grid(row=8,column=0,columnspan=2,pady=2)
-        tk.Button(master=self.window,text="Encrypt and Save",width=20,command=self.SaveEncryptedFile).grid(row=9,column=0,columnspan=2,pady=2)
-        tk.Button(master=self.window,text="Decrypt and Save",width=20,command=self.SaveDecryptedFile).grid(row=10,column=0,columnspan=2,pady=2)
+        tk.Button(master=self.window,text="Choose Public Key (e,n)",width=20,command=self.ChoosePublicKey).grid(row=7,column=0,columnspan=2,pady=2)
+        tk.Button(master=self.window,text="Choose Private Key (d,n)",width=20,command=self.ChoosePrivateKey).grid(row=8,column=0,columnspan=2,pady=2)
+        tk.Button(master=self.window,text="Generate Digital Signature",width=20,command=self.GenerateDigitalSignature).grid(row=9,column=0,columnspan=2,pady=2)
+        tk.Button(master=self.window,text="Verify Digital Signature",width=20,command=self.VerifyDigitalSignature).grid(row=10,column=0,columnspan=2,pady=2)
         tk.Button(master=self.window,text="Unselect File",width=20,command=self.UnselectFile).grid(row=11,column=0,columnspan=2,pady=2)
         
     def ChooseFile(self):
@@ -82,9 +80,6 @@ class FileHandlingWindow:
             self.n_key_entry.delete("1.0",tk.END)
             self.n_key_entry.insert("1.0",n_pub)
             
-            self.key_label["text"] = "Key : " + "Loaded"
-            self.key = "Loaded"
-            
         return "break"
         
     def ChoosePrivateKey(self):
@@ -108,42 +103,34 @@ class FileHandlingWindow:
             self.d_key_entry.insert("1.0",d_pri)
             self.n_key_entry.delete("1.0",tk.END)
             self.n_key_entry.insert("1.0",n_pri)
-            
-            self.key_label["text"] = "Key : " + "Loaded"
-            self.key = "Loaded"
         
         return "break"
                 
-    def SaveEncryptedFile(self):
+    def GenerateDigitalSignature(self):
         # buka file di self.file 
         if (self.file==""):
             mb.showinfo(title="Alert",message="Please choose a file")
         else:
             #encrypt
-            e = self.e_key_entry.get("1.0",tk.END)[:-1]
-            #d = self.d_key_entry.get("1.0",tk.END)[:-1]
+            #e = self.e_key_entry.get("1.0",tk.END)[:-1]
+            d = self.d_key_entry.get("1.0",tk.END)[:-1]
             n = self.n_key_entry.get("1.0",tk.END)[:-1]
             
-            if (len(e)==0 or len(n)==0):
-                mb.showinfo(title="Alert",message="Please insert e and n")
+            if (len(d)==0 or len(n)==0):
+                mb.showinfo(title="Alert",message="Please insert d and n")
             else: 
-                e = int(e)
-                #d = int(d)
+                #e = int(e)
+                d = int(d)
                 n = int(n)
                 
                 start_time = time.time()
                 
                 # baca file per byte lalu simpan menjadi array of integer (byte)
                 plaintext_byteintarray = OpenFileAsByteIntArray(self.file)
-
-                #print (plaintext_byteintarray)
                 
-                # encrypt
-                size = 1
-                ciphertext_hexstr = RSAEncrypt(plaintext_byteintarray,e,n,size)
-                ciphertext_byteintarray = HexStringToByteIntArray(ciphertext_hexstr)
-                #print(ciphertext_hexstr)
-                #print(ciphertext_byteintarray)
+                # generate digital signature
+                plaintext_bytes = bytes(plaintext_byteintarray)
+                signature_hexstr = GetSignature(plaintext_bytes,d,n)
 
                 end_time = time.time()
                 elapsed_time = end_time - start_time
@@ -151,71 +138,70 @@ class FileHandlingWindow:
                 # save
                 filename = fd.asksaveasfilename(
                     initialdir = "/",
-                    title = "Save file",
-                    filetypes = [("All files","*.*")],
-                    defaultextension = [("All files","*.*")]
+                    title = "Save signature file",
+                    filetypes = [("Signature files (.sig)","*.sig")],
+                    defaultextension = [("Signature files (.sig)","*.sig")]
                 )
                 if (filename!=""):
                     # save hasil enkripsi per byte
                     output_file = open(filename, "wb")
                         
-                    for byteint in ciphertext_byteintarray:
+                    signature_byteintarray = StringToByteIntArray(signature_hexstr)
+                    
+                    for byteint in signature_byteintarray:
                         output_file.write(byteint.to_bytes(1,byteorder='little'))
                      
                     output_file.close()
                     
-                    mb.showinfo(title="Alert",message="Process finished in "+str(elapsed_time)+" s and "+str(len(ciphertext_byteintarray))+" bytes")
+                    mb.showinfo(title="Alert",message="Process finished in "+str(elapsed_time)+" s")
         
-    def SaveDecryptedFile(self):
+    def VerifyDigitalSignature(self):
         # buka file di self.file 
         if (self.file==""):
             mb.showinfo(title="Alert",message="Please choose a file")
         else:
-            # decrypt
-            #e = self.e_key_entry.get("1.0",tk.END)[:-1]
-            d = self.d_key_entry.get("1.0",tk.END)[:-1]
-            n = self.n_key_entry.get("1.0",tk.END)[:-1]
-
-            if (len(d)==0 or len(n)==0):
-                mb.showinfo(title="Alert",message="Please insert d and n")
-            else:            
-                #e = int(e)
-                d = int(d)
-                n = int(n)
+            signature_filename = fd.askopenfilename(
+                initialdir = "/",
+                title = "Select signature file",
+                filetypes = [("Signature files (.sig)","*.sig")]
+            )
             
-                start_time = time.time()
-            
-                # baca file per byte lalu simpan menjadi array of integer (byte)
-                ciphertext_byteintarray = OpenFileAsByteIntArray(self.file)
-                ciphertext_hexstr = ByteIntArrayToHexString(ciphertext_byteintarray)
-                #print(ciphertext_hexstr)
-                #print(ciphertext_byteintarray)
-                
+            if (signature_filename!=""):
                 # decrypt
-                plaintext_byteintarray = RSADecrypt(ciphertext_hexstr,d,n)
-                
-                end_time = time.time()
-                elapsed_time = end_time - start_time
-                
-                #print(plaintext_byteintarray)
+                e = self.e_key_entry.get("1.0",tk.END)[:-1]
+                #d = self.d_key_entry.get("1.0",tk.END)[:-1]
+                n = self.n_key_entry.get("1.0",tk.END)[:-1]
 
-                # save
-                filename = fd.asksaveasfilename(
-                    initialdir = "/",
-                    title = "Save file",
-                    filetypes = [("All files","*.*")],
-                    defaultextension = [("All files","*.*")]
-                )
-                if (filename!=""):
-                    # save hasil enkripsi per byte
-                    output_file = open(filename, "wb")
+                if (len(e)==0 or len(n)==0):
+                    mb.showinfo(title="Alert",message="Please insert e and n")
+                else:            
+                    e = int(e)
+                    #d = int(d)
+                    n = int(n)
+                
+                    start_time = time.time()
+                
+                    # baca file per byte lalu simpan menjadi array of integer (byte)
+                    plaintext_byteintarray = OpenFileAsByteIntArray(self.file)
+                    plaintext_bytes = bytes(plaintext_byteintarray)
+                
+                    # baca file per byte lalu simpan menjadi array of integer (byte)
+                    signature_byteintarray = OpenFileAsByteIntArray(signature_filename)
+                    signature_bytes = bytes(signature_byteintarray)
+                    signature_hexstr = signature_bytes.decode()
                     
-                    for byteint in plaintext_byteintarray:
-                        output_file.write(byteint.to_bytes(1,byteorder='little'))
+                    # verify
+                    Verified = VerifySignature(plaintext_bytes,signature_hexstr,e,n)
                     
-                    output_file.close()
+                    end_time = time.time()
+                    elapsed_time = end_time - start_time
                     
-                    mb.showinfo(title="Alert",message="Process finished in "+str(elapsed_time)+" s and "+str(len(plaintext_byteintarray))+" bytes")
+                    if (Verified):
+                        mb.showinfo(title="Alert",message="Signature is verified")
+                        mb.showinfo(title="Alert",message="Process finished in "+str(elapsed_time)+" s")
+                    else:
+                        mb.showinfo(title="Alert",message="Signature is not verified")
+                        mb.showinfo(title="Alert",message="Process finished in "+str(elapsed_time)+" s")                        
     
     def UnselectFile(self):
         self.file = ""

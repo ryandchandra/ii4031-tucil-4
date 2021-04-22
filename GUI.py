@@ -39,7 +39,7 @@ class GUI:
         self.key_list_frame.frame.grid(row=0,column=2)
         
         #--- key frame ---#
-        key_button_list = ["Generate Key","Choose Public Key","Choose Private Key","Clear Key"]
+        key_button_list = ["Generate Key","Choose Public Key (e,n)","Choose Private Key (d,n)","Clear Key"]
         self.key_frame = ButtonListFrame(
             title = "Key Management",
             labels = key_button_list,
@@ -63,11 +63,11 @@ class GUI:
         self.button_frame = tk.Frame()
         
         #--- encrypt button ---#
-        self.encrypt_button = tk.Button(master=self.button_frame,text="Sign Document",command=self.Encrypt,width=25)
+        self.encrypt_button = tk.Button(master=self.button_frame,text="Sign Document",command=self.DigitalSign,width=25)
         self.encrypt_button.pack(padx=2,pady=2)
 
         #--- decrypt button ---#
-        self.decrypt_button = tk.Button(master=self.button_frame,text="Verify Signature",command=self.Decrypt,width=25)
+        self.decrypt_button = tk.Button(master=self.button_frame,text="Verify Signature",command=self.VerifySign,width=25)
         self.decrypt_button.pack(padx=2,pady=2)
         
         #--- check box ---#
@@ -111,7 +111,7 @@ class GUI:
             self.signature.entry["state"]=tk.DISABLED
             self.signature.entry["bg"]="light grey"
                 
-    def Encrypt(self):
+    def DigitalSign(self):
         # Event handler when encrypt button is pressed
         # Encrypt document and key
         
@@ -124,20 +124,18 @@ class GUI:
         # Check for validity
         if (len(document)==0): # Empty document
             mb.showinfo(title="Alert",message="Please insert document")
-        elif (sign!=-1):
-            mb.showinfo(title="Alert",message="The document has been signed")
-        else:    
-            # Encrypt
-            e = self.key_e 
+        else:
+            # Digital Sign
+            d = self.key_d 
             n = self.key_n
-            state_sep_sign = self.sep_sign.get()   
+            state_sep_sign = self.sep_sign.get()
 
             if (e==-1 or n==-1):
-                mb.showinfo(title="Alert",message="Please choose key first")
+                mb.showinfo(title="Alert",message="Please choose private key first")
             else:
                 start_time = time.time()
                 
-                signature_hexstr = GetSignature(document,e,n,1)
+                signature_hexstr = GetSignature(document.encode(),d,n)
 
                 end_time = time.time()
                 elapsed_time = end_time - start_time
@@ -147,13 +145,15 @@ class GUI:
                     self.signature.entry.delete("1.0",tk.END)
                     self.signature.entry.insert("1.0",signature_hexstr)
                 else:
+                    signed_document = document + "<ds>" + signature_hexstr + "</ds>"
+                    
                     self.document.entry.delete("1.0",tk.END)
-                    self.document.entry.insert("1.0","<ds>" + signature_hexstr + "</ds>")
+                    self.document.entry.insert("1.0",signed_document)
                     self.document.entry.insert("1.0",document)
                     
                 mb.showinfo(title="Alert",message="Process finished in " + str(elapsed_time) + "s")
             
-    def Decrypt(self):
+    def VerifySign(self):
         # Event handler when decrypt button is pressed
         # Decrypt signature and key
         
@@ -181,20 +181,16 @@ class GUI:
             mb.showinfo(title="Alert",message="Please insert document and/or signature")
         else:
             # Decrypt
-            d = self.key_d 
+            e = self.key_e 
             n = self.key_n
             
-            if (d==-1 or n==-1):
-                mb.showinfo(title="Alert",message="Please choose key first")
+            if (e==-1 or n==-1):
+                mb.showinfo(title="Alert",message="Please choose public key first")
             else:            
                 # Decrypt
                 start_time = time.time()
                 
-                hash_value_byteintarray_fromsign = RSADecrypt(signature,d,n)
-                hash_value_byteintarray_fromdoc = hashlib.sha1(document.encode())
-                hash_value_byteintarray_fromdoc = hash_value_byteintarray_fromdoc.hexdigest()
-                hash_value_byteintarray_fromdoc = StringToByteIntArray(hash_value_byteintarray_fromdoc)
-                Verified = hash_value_byteintarray_fromdoc == hash_value_byteintarray_fromsign
+                Verified = VerifySignature(document.encode(),signature,e,n)
                 
                 end_time = time.time()
                 elapsed_time = end_time - start_time
@@ -227,19 +223,19 @@ class GUI:
                 content_pub = public_file.read()
                 
                 # Ambil nilai e dan n
-                d_pub = int(content_pub[0:(content_pub.find(' ')+1)])
+                e_pub = int(content_pub[0:(content_pub.find(' ')+1)])
                 n_pub = int(content_pub[(content_pub.find(' ')+1):])
                 
                 public_file.close()
 
                 # Masukkan isi file
-                if (self.key_n==-1 or self.key_e==-1): # Jika n Alice belum diset (key Alice belum diset), atau baru e dan n Alice yang diset, masukkan e dan n langsung
-                    self.key_d = d_pub
+                if (self.key_n==-1 or self.key_d==-1): # Jika n Alice belum diset (key Alice belum diset), atau baru e dan n Alice yang diset, masukkan e dan n langsung
+                    self.key_e = e_pub
                     self.key_n = n_pub
                     self.key_list_frame.UpdateKey(self.key_e,self.key_d,self.key_n)
-                elif (self.key_e!=-1 and self.key_n==n_pub): # Jika d dan n Alice sudah diset dan sesuai dengan n baru
-                    if (math.gcd(d_pub,self.key_e)==1):
-                        self.key_d = d_pub
+                elif (self.key_d!=-1 and self.key_n==n_pub): # Jika d dan n Alice sudah diset dan sesuai dengan n baru
+                    if (math.gcd(e_pub,self.key_d)==1):
+                        self.key_e = e_pub
                         self.key_n = n_pub
                         self.key_list_frame.UpdateKey(self.key_e,self.key_d,self.key_n)
                     else:
@@ -258,18 +254,18 @@ class GUI:
                 private_file = open(private_filename,"r")
                 content_pri = private_file.read()
                 
-                e_pri = int(content_pri[0:(content_pri.find(' ')+1)])
+                d_pri = int(content_pri[0:(content_pri.find(' ')+1)])
                 n_pri = int(content_pri[(content_pri.find(' ')+1):])
                 
                 private_file.close()
                 
-                if (self.key_n==-1 or self.key_d==-1): # Jika n Alice belum diset (key Alice belum diset), atau baru e dan n Alice yang diset, masukkan e dan n langsung
-                    self.key_e = e_pri
+                if (self.key_n==-1 or self.key_e==-1): # Jika n Alice belum diset (key Alice belum diset), atau baru e dan n Alice yang diset, masukkan e dan n langsung
+                    self.key_d = d_pri
                     self.key_n = n_pri
                     self.key_list_frame.UpdateKey(self.key_e,self.key_d,self.key_n)
-                elif (self.key_d!=-1 and self.key_n==n_pri): # Jika d dan n Alice sudah diset dan sesuai dengan n baru
-                    if (math.gcd(e_pri,self.key_d)==1):
-                        self.key_e = e_pri
+                elif (self.key_e!=-1 and self.key_n==n_pri): # Jika d dan n Alice sudah diset dan sesuai dengan n baru
+                    if (math.gcd(d_pri,self.key_e)==1):
+                        self.key_d = d_pri
                         self.key_n = n_pri
                         self.key_list_frame.UpdateKey(self.key_e,self.key_d,self.key_n)
                     else:
