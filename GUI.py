@@ -173,6 +173,8 @@ class GUI:
                 data_available = 0
             else:
                 data_available = 1
+                signature = hex(signature)
+                signature = signature[2:len(signature)]
 
         # Check for validity
         if (data_available == 0):
