@@ -1,4 +1,5 @@
 import math
+import hashlib
 
 def StringToByteIntArray(string):
     # Mengubah string menjadi array of integer (byte) sesuai dengan ascii/utf-8
@@ -10,7 +11,15 @@ def StringToByteIntArray(string):
         byteint_array.append(ord(char))
         
     return byteint_array
-    
+
+def ByteIntArrayToString (byteint_array):
+    # Mengubah string menjadi array of integer (byte) sesuai dengan ascii/utf-8
+    # Input : array of integer (byte) 
+    # Output : string
+    string = "".join([chr(value) for value in byteint_array])
+        
+    return string
+
 def HexStringToByteIntArray(hexstring):
     # Mengubah string heksadesimal menjadi array of integer(byte)
     # Input : string hexadecimal
@@ -117,6 +126,20 @@ def GetDocAndSign(mixed_document):
             return -1,-1
     else:
         return -1,-1
+
+def GetSignature(string_document,e,n,size):
+    # RSA Encrypt
+    # Input :   Document to be signed in string format
+    # Output :  Encrypted Hash Value (using RSA) --> Signature
+
+    # Hitung nilai Hash
+    hash_value = hashlib.sha1(string_document.encode())
+    hash_value = hash_value.hexdigest()
+
+    plaintext_byteintarray = StringToByteIntArray(hash_value)
+    signature = RSAEncrypt(plaintext_byteintarray,e,n,size)
+
+    return signature
         
 def BlockCiphertext(ciphertext,n):
     # Membagi ciphertext dengan panjang blok sesuai ceil(16 log n)
@@ -176,7 +199,7 @@ def RSAEncrypt(plaintext_byteintarray,e,n,size):
         ciphertext_hexstr += cipher_hex
     
     return ciphertext_hexstr
-    
+
 def RSADecrypt(ciphertext_hexstr,d,n):
     # RSA Decrypt
     # Input :   ciphertext_hexstr (string of hexadecimal)
