@@ -26,29 +26,29 @@ class FileHandlingWindow:
 
         #--- public key e ---#
         self.e_key_label = tk.Label(master=self.window,text="e: ")
-        self.e_key_label.grid(row=3,column=0,columnspan=2,padx=120,pady=2)
+        self.e_key_label.grid(row=3,column=0,columnspan=1,padx=120,pady=2)
         self.e_key_entry = tk.Text(master=self.window,width=10,height=1)
-        self.e_key_entry.grid(row=3,column=1,padx=120,pady=2)
+        self.e_key_entry.grid(row=3,column=0,columnspan=2,padx=120,pady=2)
 
         #--- private key d ---#
         self.d_key_label = tk.Label(master=self.window,text="d: ")
-        self.d_key_label.grid(row=4,column=0,columnspan=2,padx=120,pady=2)
+        self.d_key_label.grid(row=4,column=0,columnspan=1,padx=120,pady=2)
         self.d_key_entry = tk.Text(master=self.window,width=10,height=1)
-        self.d_key_entry.grid(row=4,column=1,padx=120,pady=2)
+        self.d_key_entry.grid(row=4,column=0,columnspan=2,padx=120,pady=2)
 
         #--- n key ---#
         self.n_key_label = tk.Label(master=self.window,text="n: ")
-        self.n_key_label.grid(row=5,column=0,columnspan=2,padx=120,pady=2)
+        self.n_key_label.grid(row=5,column=0,columnspan=1,padx=120,pady=2)
         self.n_key_entry = tk.Text(master=self.window,width=10,height=1)
-        self.n_key_entry.grid(row=5,column=1,padx=120,pady=2)
+        self.n_key_entry.grid(row=5,column=0,columnspan=2,padx=120,pady=2)
         
         # Button list
-        tk.Button(master=self.window,text="Choose File",width=20,command=self.ChooseFile).grid(row=6,column=0,columnspan=2,pady=2)
-        tk.Button(master=self.window,text="Choose Public Key (e,n)",width=20,command=self.ChoosePublicKey).grid(row=7,column=0,columnspan=2,pady=2)
-        tk.Button(master=self.window,text="Choose Private Key (d,n)",width=20,command=self.ChoosePrivateKey).grid(row=8,column=0,columnspan=2,pady=2)
-        tk.Button(master=self.window,text="Generate Digital Signature",width=20,command=self.GenerateDigitalSignature).grid(row=9,column=0,columnspan=2,pady=2)
-        tk.Button(master=self.window,text="Verify Digital Signature",width=20,command=self.VerifyDigitalSignature).grid(row=10,column=0,columnspan=2,pady=2)
-        tk.Button(master=self.window,text="Unselect File",width=20,command=self.UnselectFile).grid(row=11,column=0,columnspan=2,pady=2)
+        tk.Button(master=self.window,text="Choose File",width=20,command=self.ChooseFile).grid(row=6,column=0,columnspan=3,pady=2)
+        tk.Button(master=self.window,text="Choose Public Key (e,n)",width=20,command=self.ChoosePublicKey).grid(row=7,column=0,columnspan=3,pady=2)
+        tk.Button(master=self.window,text="Choose Private Key (d,n)",width=20,command=self.ChoosePrivateKey).grid(row=8,column=0,columnspan=3,pady=2)
+        tk.Button(master=self.window,text="Generate Digital Signature",width=20,command=self.GenerateDigitalSignature).grid(row=9,column=0,columnspan=3,pady=2)
+        tk.Button(master=self.window,text="Verify Digital Signature",width=20,command=self.VerifyDigitalSignature).grid(row=10,column=0,columnspan=3,pady=2)
+        tk.Button(master=self.window,text="Unselect File",width=20,command=self.UnselectFile).grid(row=11,column=0,columnspan=3,pady=2)
         
     def ChooseFile(self):
         # Event handler when Choose File button is pressed
