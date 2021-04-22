@@ -116,19 +116,21 @@ class GUI:
         # Encrypt document and key
         
         # Take the document and key from the field
-        document = self.document.entry.get("1.0",tk.END)[:-1]
+        mix_doc = self.document.entry.get("1.0",tk.END)[:-1]
+        document, sign = GetDocAndSign(mix_doc)
+        if (sign==-1):
+            document = mix_doc
             
         # Check for validity
         if (len(document)==0): # Empty document
             mb.showinfo(title="Alert",message="Please insert document")
-        else:
-            document_byteintarray = StringToByteIntArray(document)
-                
+        elif (sign!=-1):
+            mb.showinfo(title="Alert",message="The document has been signed")
+        else:    
             # Encrypt
             e = self.key_e 
             n = self.key_n
-            print(e)
-            print(n)    
+            state_sep_sign = self.sep_sign.get()   
 
             if (e==-1 or n==-1):
                 mb.showinfo(title="Alert",message="Please choose key first")
@@ -141,9 +143,14 @@ class GUI:
                 elapsed_time = end_time - start_time
                 
                 # Insert into signature field
-                self.signature.entry.delete("1.0",tk.END)
-                self.signature.entry.insert("1.0",signature_hexstr)
-                
+                if (state_sep_sign==1):
+                    self.signature.entry.delete("1.0",tk.END)
+                    self.signature.entry.insert("1.0",signature_hexstr)
+                else:
+                    self.document.entry.delete("1.0",tk.END)
+                    self.document.entry.insert("1.0","<ds>" + signature_hexstr + "</ds>")
+                    self.document.entry.insert("1.0",document)
+                    
                 mb.showinfo(title="Alert",message="Process finished in " + str(elapsed_time) + "s")
             
     def Decrypt(self):
@@ -203,19 +210,19 @@ class GUI:
                 content_pub = public_file.read()
                 
                 # Ambil nilai e dan n
-                e_pub = int(content_pub[0:(content_pub.find(' ')+1)])
+                d_pub = int(content_pub[0:(content_pub.find(' ')+1)])
                 n_pub = int(content_pub[(content_pub.find(' ')+1):])
                 
                 public_file.close()
 
                 # Masukkan isi file
-                if (self.key_n==-1 or self.key_d==-1): # Jika n Alice belum diset (key Alice belum diset), atau baru e dan n Alice yang diset, masukkan e dan n langsung
-                    self.key_e = e_pub
+                if (self.key_n==-1 or self.key_e==-1): # Jika n Alice belum diset (key Alice belum diset), atau baru e dan n Alice yang diset, masukkan e dan n langsung
+                    self.key_d = d_pub
                     self.key_n = n_pub
                     self.key_list_frame.UpdateKey(self.key_e,self.key_d,self.key_n)
-                elif (self.key_d!=-1 and self.key_n==n_pub): # Jika d dan n Alice sudah diset dan sesuai dengan n baru
-                    if (math.gcd(e_pub,self.key_d)==1):
-                        self.key_e = e_pub
+                elif (self.key_e!=-1 and self.key_n==n_pub): # Jika d dan n Alice sudah diset dan sesuai dengan n baru
+                    if (math.gcd(d_pub,self.key_e)==1):
+                        self.key_d = d_pub
                         self.key_n = n_pub
                         self.key_list_frame.UpdateKey(self.key_e,self.key_d,self.key_n)
                     else:
@@ -234,18 +241,18 @@ class GUI:
                 private_file = open(private_filename,"r")
                 content_pri = private_file.read()
                 
-                d_pri = int(content_pri[0:(content_pri.find(' ')+1)])
+                e_pri = int(content_pri[0:(content_pri.find(' ')+1)])
                 n_pri = int(content_pri[(content_pri.find(' ')+1):])
                 
                 private_file.close()
                 
-                if (self.key_n==-1 or self.key_e==-1): # Jika n Alice belum diset (key Alice belum diset), atau baru e dan n Alice yang diset, masukkan e dan n langsung
-                    self.key_d = d_pri
+                if (self.key_n==-1 or self.key_d==-1): # Jika n Alice belum diset (key Alice belum diset), atau baru e dan n Alice yang diset, masukkan e dan n langsung
+                    self.key_e = e_pri
                     self.key_n = n_pri
                     self.key_list_frame.UpdateKey(self.key_e,self.key_d,self.key_n)
-                elif (self.key_e!=-1 and self.key_n==n_pri): # Jika d dan n Alice sudah diset dan sesuai dengan n baru
-                    if (math.gcd(d_pri,self.key_e)==1):
-                        self.key_d = d_pri
+                elif (self.key_d!=-1 and self.key_n==n_pri): # Jika d dan n Alice sudah diset dan sesuai dengan n baru
+                    if (math.gcd(e_pri,self.key_d)==1):
+                        self.key_e = e_pri
                         self.key_n = n_pri
                         self.key_list_frame.UpdateKey(self.key_e,self.key_d,self.key_n)
                     else:
